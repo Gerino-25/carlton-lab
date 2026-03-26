@@ -1476,6 +1476,9 @@ select option { background: var(--s2); }
       <span class="ftb-nav-icon">📋</span><span class="ftb-nav-label">OMS — Ordres</span>
       <span class="ftb-nav-count" id="ftb-cnt-pending">0</span>
     </div>
+    <div class="ftb-nav-item" id="ftb-nav-alimentation" onclick="ftbNav('alimentation')">
+      <span class="ftb-nav-icon">📥</span><span class="ftb-nav-label">Alimentation</span>
+    </div>
     <div class="ftb-nav-item" id="ftb-nav-positions" onclick="ftbNav('positions')">
       <span class="ftb-nav-icon">📊</span><span class="ftb-nav-label">Positions &amp; P&amp;L</span>
     </div>
@@ -1535,7 +1538,76 @@ select option { background: var(--s2); }
       </div>
     </div>
 
-    <!-- POSITIONS -->
+    <!-- ALIMENTATION PORTEFEUILLE -->
+    <div id="ftb-module-alimentation" class="ftb-module">
+      <div class="ftb-mod-header">
+        <div class="ftb-mod-title"><span>Alimentation</span> Portefeuille</div>
+        <div class="ftb-toolbar">
+          <div class="ftb-fund-tabs" id="alim-fund-tabs"></div>
+        </div>
+      </div>
+      <div class="ftb-mod-body">
+
+        <!-- CACEIS import -->
+        <div class="ftb-card">
+          <div class="ftb-card-title">🏦 Import CACEIS <span style="font-size:.62rem;color:var(--muted);font-weight:400">— fichier brut dépositaire</span></div>
+          <div class="import-zone" id="caceis-drop-zone"
+            ondragover="event.preventDefault();this.classList.add('drag')"
+            ondragleave="this.classList.remove('drag')"
+            ondrop="ftbCaceisFileDrop(event)"
+            onclick="document.getElementById('caceis-file-in').click()">
+            <strong>📂</strong>
+            <p>Glissez le fichier CACEIS (VVL_*.xlsx) ou cliquez</p>
+            <p style="font-size:.65rem;margin-top:3px;color:var(--muted)">Détection automatique du format · Remplace les positions du fonds · Snapshot automatique</p>
+          </div>
+          <input type="file" id="caceis-file-in" accept=".xlsx,.xls" style="display:none" onchange="ftbCaceisFile(this.files[0])">
+          <div id="caceis-import-status" style="margin-top:8px;font-size:.75rem;min-height:20px"></div>
+        </div>
+
+        <!-- Import générique CSV/Excel -->
+        <div class="ftb-card">
+          <div class="ftb-card-title">📄 Import générique <span style="font-size:.62rem;color:var(--muted);font-weight:400">— CSV ou Excel</span></div>
+          <div class="import-zone" id="pos-drop-zone"
+            ondragover="event.preventDefault();this.classList.add('drag')"
+            ondragleave="this.classList.remove('drag')"
+            ondrop="ftbPosDrop(event)"
+            onclick="document.getElementById('pos-file-in').click()">
+            <strong>📂</strong>
+            <p>Glissez un CSV/Excel ou cliquez</p>
+            <p style="font-size:.65rem;margin-top:3px;color:var(--muted)">Colonnes : <code>name, isin, asset, sector, issuer, qty, pru, price, rating, duration</code></p>
+          </div>
+          <input type="file" id="pos-file-in" accept=".csv,.xlsx,.xls" style="display:none" onchange="ftbPosFile(this.files[0])">
+          <div id="pos-import-preview"></div>
+          <div id="pos-import-actions" style="display:none;margin-top:8px">
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <label style="font-size:.7rem;color:var(--muted2)">Mode :</label>
+              <select id="pos-import-mode" style="width:200px;font-size:.7rem;padding:4px 7px">
+                <option value="replace">Remplacer toutes les positions</option>
+                <option value="add">Ajouter aux positions existantes</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:7px">
+              <button class="btn btn-t" onclick="ftbConfirmImport()">✓ Importer</button>
+              <button class="btn btn-ghost" onclick="ftbCancelImport()">Annuler</button>
+              <button class="btn btn-ghost btn-sm" onclick="ftbDownloadTemplate()" style="margin-left:auto">⬇ Modèle CSV</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saisie manuelle -->
+        <div class="ftb-card">
+          <div class="ftb-card-title">✏️ Saisie manuelle <span style="font-size:.62rem;color:var(--muted);font-weight:400">— ajouter une position</span></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button class="btn btn-t" onclick="ftbOpenPosModal()">＋ Nouvelle position</button>
+            <button class="btn btn-ghost btn-sm" onclick="ftbSimPrices()">↺ Mettre à jour les cours</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="ftbClearPos()">🗑 Vider les positions</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- POSITIONS & P&L -->
     <div id="ftb-module-positions" class="ftb-module">
       <div class="ftb-mod-header">
         <div class="ftb-mod-title">
@@ -1543,7 +1615,6 @@ select option { background: var(--s2); }
           <span id="pos-snapshot-badge" style="display:none;font-size:.62rem;font-family:var(--font-m);background:#ffb34022;border:1px solid var(--amber);color:var(--amber);padding:2px 8px;border-radius:10px;margin-left:8px">📅 Historique</span>
         </div>
         <div class="ftb-toolbar">
-          <!-- Sélecteur de date historique -->
           <div style="display:flex;align-items:center;gap:6px">
             <span style="font-size:.65rem;color:var(--muted)">Date :</span>
             <select id="pos-snapshot-select" onchange="ftbSelectSnapshot(this.value)"
@@ -1552,62 +1623,10 @@ select option { background: var(--s2); }
             </select>
           </div>
           <div class="ftb-fund-tabs" id="pos-fund-tabs"></div>
-          <button class="btn btn-t" onclick="ftbOpenPosModal()">＋ Nouvelle position</button>
-          <button class="btn btn-ghost btn-sm" onclick="ftbOpenImport()">⬆ Import</button>
-          <button class="btn btn-ghost btn-sm" onclick="ftbSimPrices()">↺ Cours</button>
+          <button class="btn btn-ghost btn-sm" onclick="ftbNav('alimentation')" style="color:var(--teal)">📥 Alimenter</button>
         </div>
       </div>
       <div class="ftb-mod-body">
-        <!-- Import panel -->
-        <div id="pos-import-panel" style="display:none">
-          <div class="ftb-card">
-            <div class="ftb-card-title">Import positions <button class="btn btn-ghost btn-sm" onclick="ftbCloseImport()">✕</button></div>
-
-            <!-- CACEIS import zone -->
-            <div style="margin-bottom:10px;padding:10px;background:var(--s3);border-radius:8px;border:1px solid var(--border2)">
-              <div style="font-size:.7rem;font-weight:700;color:var(--teal);margin-bottom:6px">🏦 Import CACEIS (fichier brut)</div>
-              <div class="import-zone" id="caceis-drop-zone"
-                ondragover="event.preventDefault();this.classList.add('drag')"
-                ondragleave="this.classList.remove('drag')"
-                ondrop="ftbCaceisFileDrop(event)"
-                onclick="document.getElementById('caceis-file-in').click()">
-                <strong>📂</strong>
-                <p>Glissez le fichier CACEIS (VVL_*.xlsx) ou cliquez</p>
-                <p style="font-size:.65rem;margin-top:3px;color:var(--muted)">Détection automatique du format CACEIS — remplace les positions du fonds sélectionné</p>
-              </div>
-              <input type="file" id="caceis-file-in" accept=".xlsx,.xls" style="display:none" onchange="ftbCaceisFile(this.files[0])">
-              <div id="caceis-import-status" style="margin-top:6px;font-size:.72rem"></div>
-            </div>
-
-            <div style="font-size:.68rem;color:var(--muted);text-align:center;margin:8px 0">— ou import format générique —</div>
-
-            <div class="import-zone" id="pos-drop-zone"
-              ondragover="event.preventDefault();this.classList.add('drag')"
-              ondragleave="this.classList.remove('drag')"
-              ondrop="ftbPosDrop(event)"
-              onclick="document.getElementById('pos-file-in').click()">
-              <strong>📂</strong>
-              <p>Glissez un CSV/Excel ou cliquez</p>
-              <p style="font-size:.65rem;margin-top:3px;color:var(--muted)">Colonnes : <code>name, isin, asset, sector, issuer, qty, pru, price, rating, duration</code></p>
-            </div>
-            <input type="file" id="pos-file-in" accept=".csv,.xlsx,.xls" style="display:none" onchange="ftbPosFile(this.files[0])">
-            <div id="pos-import-preview"></div>
-            <div id="pos-import-actions" style="display:none;margin-top:8px">
-              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-                <label style="font-size:.7rem;color:var(--muted2)">Mode :</label>
-                <select id="pos-import-mode" style="width:200px;font-size:.7rem;padding:4px 7px">
-                  <option value="replace">Remplacer toutes les positions</option>
-                  <option value="add">Ajouter aux positions existantes</option>
-                </select>
-              </div>
-              <div style="display:flex;gap:7px">
-                <button class="btn btn-t" onclick="ftbConfirmImport()">✓ Importer</button>
-                <button class="btn btn-ghost" onclick="ftbCancelImport()">Annuler</button>
-                <button class="btn btn-ghost btn-sm" onclick="ftbDownloadTemplate()" style="margin-left:auto">⬇ Modèle CSV</button>
-              </div>
-            </div>
-          </div>
-        </div>
         <div class="kpi-strip" id="pos-kpis"></div>
         <div class="ftb-charts-row">
           <div class="ftb-card" style="margin-bottom:0"><div class="ftb-card-title">Exposition par secteur</div><div class="ftb-chart-wrap-md"><canvas id="chart-pos-sector"></canvas></div></div>
@@ -2199,7 +2218,12 @@ function selectPortfolio(id) {
   save(); renderCategorySidebar();
   document.getElementById('ptf-title').innerHTML = `<em>${ptf.name}</em>`;
   renderFluxList(); renderBenchList();
-  compute(); renderChart(); renderRisk(); renderTable();
+  compute();
+  // Re-render l'onglet actif
+  const activePane = document.querySelector('#app-portfoliolab .pane.active');
+  const paneName = activePane?.id?.replace('pane-', '');
+  if (paneName) switchPane(paneName);
+  else { renderInventaire(); renderChart(); renderRisk(); renderTable(); }
   if (activeApp !== 'portfoliolab') switchApp('portfoliolab');
 }
 
@@ -3884,7 +3908,7 @@ function ftbNav(name){
   document.getElementById('ftb-nav-'+name).classList.add('active');
   ftbActiveModule=name;ftbRenderFundCards();ftbRenderCurrent();
 }
-function ftbRenderCurrent(){const m=ftbActiveModule;if(m==='oms')ftbRenderOMS();if(m==='positions')ftbRenderPos();if(m==='compliance')ftbRenderComp();if(m==='cash')ftbRenderCash();if(m==='reporting')ftbRenderReport();if(m==='historique')ftbRenderHistorique();}
+function ftbRenderCurrent(){const m=ftbActiveModule;if(m==='oms')ftbRenderOMS();if(m==='alimentation')ftbRenderTabs('alim-fund-tabs','positions');if(m==='positions')ftbRenderPos();if(m==='compliance')ftbRenderComp();if(m==='cash')ftbRenderCash();if(m==='reporting')ftbRenderReport();if(m==='historique')ftbRenderHistorique();}
 
 function ftbRenderFundCards(){
   const el=document.getElementById('ftb-fund-cards');if(!el)return;el.innerHTML='';
@@ -4612,6 +4636,7 @@ const SEARCH_MODULES = [
   { label:'Analyse performance', icon:'🎯', app:'perf',         tag:'Module' },
   { label:'Compliance CSW',      icon:'✅', app:'ftb',          tag:'Module', sub:'compliance' },
   { label:'OMS — Ordres',        icon:'📋', app:'ftb',          tag:'Module', sub:'oms' },
+  { label:'Alimentation',        icon:'📥', app:'ftb',          tag:'Module', sub:'alimentation' },
   { label:'Positions & P&L',     icon:'📊', app:'ftb',          tag:'Module', sub:'positions' },
   { label:'Cash & Règlement',    icon:'💰', app:'ftb',          tag:'Module', sub:'cash' },
   { label:'Reporting',           icon:'📑', app:'ftb',          tag:'Module', sub:'reporting' },
