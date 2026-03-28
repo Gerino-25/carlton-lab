@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Opérations → FTB OMS + quoi d'autre ? (Portfolio Lab Flux/Import ?)Opérations → FTB OMS + quoi d'autre ? (Portfolio Lab Flux/Import ?)<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -283,6 +283,7 @@ body::after {
 
 /* ── Sidebar ── */
 .sidebar {
+  display: none !important;
   width: 248px; min-width: 248px;
   background: var(--s1); border-right: 1px solid var(--border);
   display: flex; flex-direction: column; overflow: hidden; overflow-y: auto;
@@ -847,7 +848,7 @@ select option { background: var(--s2); }
   <div class="ct-logo-box"></div>
   <button class="ct-tab ct-db" onclick="ctSwitch('dashboard',this)">Dashboard</button>
   <button class="ct-tab" onclick="ctSwitch('analyse',this)">Analyse</button>
-  <button class="ct-tab" onclick="ctSwitch('operations',this)">Opérations</button>
+  <button class="ct-tab" onclick="ctSwitch('operations',this)">Front to Back</button>
   <button class="ct-tab" onclick="ctSwitch('conformite',this)">Conformité</button>
   <button class="ct-tab" onclick="ctSwitch('reporting',this)">Reporting</button>
   <button class="ct-tab" onclick="ctSwitch('commercial',this)">Commercial</button>
@@ -6041,40 +6042,87 @@ const CT_PANELS = {
   }
 };
 
+// Sub-nav definitions
+const CT_SUBNAV = {
+  analyse: [
+    { l:'Duration & Spreads', fn: ()=>{ switchApp('duration'); switchDurPane('spreads'); } },
+    { l:'Courbes de perf',    fn: ()=>{ switchApp('portfoliolab'); switchPane('courbe'); } },
+    { l:'Risque',             fn: ()=>{ switchApp('portfoliolab'); switchPane('risque'); } },
+    { l:'Suivi Obligations',  fn: ()=>{ switchApp('obligations'); } }
+  ],
+  operations: [
+    { l:'OMS',              fn: ()=>{ switchApp('ftb'); if(!ftbInitialized){ftbInit();ftbInitialized=true;} ftbNav('oms'); } },
+    { l:'Alimentation',     fn: ()=>{ switchApp('ftb'); if(!ftbInitialized){ftbInit();ftbInitialized=true;} ftbNav('alimentation'); } },
+    { l:'Cash & Règlement', fn: ()=>{ switchApp('ftb'); if(!ftbInitialized){ftbInit();ftbInitialized=true;} ftbNav('cash'); } }
+  ],
+  conformite: [
+    { l:'Compliance', fn: ()=>{ switchApp('ftb'); if(!ftbInitialized){ftbInit();ftbInitialized=true;} ftbNav('compliance'); } }
+  ],
+  reporting: [
+    { l:'Reporting', fn: ()=>{ switchApp('ftb'); if(!ftbInitialized){ftbInit();ftbInitialized=true;} ftbNav('reporting'); } }
+  ],
+  commercial: []
+};
+
+function ctRenderSubnav(name) {
+  const bar = document.getElementById('ct-subnav');
+  if (!bar) return;
+  const items = CT_SUBNAV[name] || [];
+  if (items.length === 0) { bar.style.display = 'none'; return; }
+  bar.innerHTML = '';
+  bar.style.display = 'flex';
+  // Adjust ct-layer and shell top offset
+  const layer = document.getElementById('ct-layer');
+  if (layer) layer.style.top = '86px';
+  const sh = document.querySelector('.shell');
+  if (sh) { sh.style.height = 'calc(100vh - 86px)'; sh.style.marginTop = '86px'; }
+  items.forEach((item, i) => {
+    const b = document.createElement('button');
+    b.textContent = item.l;
+    b.style.cssText = 'background:none;border:none;color:#ccc;font-size:.75rem;font-weight:500;padding:0 14px;height:38px;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;letter-spacing:.02em;';
+    b.onmouseover = ()=>b.style.color='#fff';
+    b.onmouseout  = ()=>{ b.style.color = b._active ? '#E8A020' : '#ccc'; };
+    b.onclick = ()=>{
+      bar.querySelectorAll('button').forEach(x=>{ x.style.borderBottomColor='transparent'; x.style.color='#ccc'; x._active=false; });
+      b.style.borderBottomColor = '#E8A020';
+      b.style.color = '#E8A020';
+      b._active = true;
+      item.fn();
+    };
+    if (i === 0) {
+      b.style.borderBottomColor = '#E8A020';
+      b.style.color = '#E8A020';
+      b._active = true;
+      item.fn();
+    }
+    bar.appendChild(b);
+  });
+}
+
+function ctHideSubnav() {
+  const bar = document.getElementById('ct-subnav');
+  if (bar) bar.style.display = 'none';
+  const layer = document.getElementById('ct-layer');
+  if (layer) layer.style.top = '48px';
+  const sh = document.querySelector('.shell');
+  if (sh) { sh.style.height = 'calc(100vh - 48px)'; sh.style.marginTop = '48px'; }
+}
+
 function ctSwitch(name, btn) {
   document.querySelectorAll('.ct-tab').forEach(t=>t.classList.remove('ct-db','ct-mod'));
-
-  // Fermer le layer dashboard si ouvert
   const layer = document.getElementById('ct-layer');
-  layer.classList.remove('ct-on');
 
   if (name === 'dashboard') {
     btn.classList.add('ct-db');
+    ctHideSubnav();
     layer.classList.add('ct-on');
     document.getElementById('ct-rp').classList.add('ct-hidden');
     document.getElementById('ct-ph-title').textContent = 'Dashboard — Tous les portefeuilles';
     ctRenderSyno();
-    return;
-  }
-
-  btn.classList.add('ct-mod');
-
-  // Navigation directe vers les modules
-  if (name === 'analyse') {
-    switchApp('duration');
-    setTimeout(()=>switchDurPane('spreads'), 200);
-  } else if (name === 'operations') {
-    switchApp('ftb');
-    setTimeout(()=>{ if(!ftbInitialized){ftbInit();ftbInitialized=true;} ftbNav('oms'); }, 200);
-  } else if (name === 'conformite') {
-    switchApp('ftb');
-    setTimeout(()=>{ if(!ftbInitialized){ftbInit();ftbInitialized=true;} ftbNav('compliance'); }, 200);
-  } else if (name === 'reporting') {
-    switchApp('ftb');
-    setTimeout(()=>{ if(!ftbInitialized){ftbInit();ftbInitialized=true;} ftbNav('reporting'); }, 200);
-  } else if (name === 'commercial') {
-    switchApp('ftb');
-    setTimeout(()=>{ if(!ftbInitialized){ftbInit();ftbInitialized=true;} ftbNav('reporting'); }, 200);
+  } else {
+    btn.classList.add('ct-mod');
+    layer.classList.remove('ct-on');
+    ctRenderSubnav(name);
   }
 }
 
