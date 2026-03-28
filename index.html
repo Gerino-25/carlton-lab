@@ -11,30 +11,83 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <!-- Auth indépendant — s'exécute immédiatement sans attendre Firebase -->
 <script>
-// doLogin appelé par le bouton — délègue au SDK Firebase Auth dans le module
+const _FB_API_KEY = 'AIzaSyDOgRTwiiJpeO4jkC02br1FRWHrY8EhwmA';
+const _FB_PROJECT = 'carlton-lab-5f18d';
+
+// Session existante
+const _storedUser = (() => { try { return JSON.parse(localStorage.getItem('cl_user')); } catch(e) { return null; } })();
+
+function _showApp(user) {
+  window._fbUser = user;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'flex';
+  const el = document.getElementById('user-display');
+  if (el) el.textContent = user.email.split('@')[0];
+  const av = document.getElementById('user-avatar');
+  if (av) av.textContent = user.email[0].toUpperCase();
+  if (!window._appInited) { window._appInited = true; if (typeof init === 'function') init(); }
+}
+
+// Activer le bouton immédiatement
+window.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('login-btn');
+  const st  = document.getElementById('fb-init-status');
+  if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; btn.style.opacity = '1'; }
+  if (st)  { st.textContent = '🔒 Connexion sécurisée'; st.style.color = '#00c8ff'; }
+  // Session mémorisée
+  if (_storedUser?.email && _storedUser?.token) _showApp(_storedUser);
+});
+
+window.fbLogin = async (email, password) => {
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('login-btn');
+  errEl.textContent = '';
+  try {
+    const res  = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${_FB_API_KEY}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email, password, returnSecureToken: true }) });
+    const data = await res.json();
+    if (data.error) {
+      const code = data.error.message || '';
+      errEl.textContent = code.includes('INVALID') || code.includes('PASSWORD') || code.includes('EMAIL')
+        ? 'Email ou mot de passe incorrect'
+        : code.includes('TOO_MANY') ? 'Trop de tentatives' : 'Erreur : ' + code;
+      if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; }
+      return;
+    }
+    const user = { email: data.email, uid: data.localId, token: data.idToken, refresh: data.refreshToken };
+    localStorage.setItem('cl_user', JSON.stringify(user));
+    _showApp(user);
+  } catch(e) {
+    errEl.textContent = 'Erreur réseau';
+    if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; }
+  }
+};
+
+window.fbLogout = () => {
+  localStorage.removeItem('cl_user');
+  window._fbUser = null; window._appInited = false;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  const btn = document.getElementById('login-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; }
+};
+
 function doLogin() {
   const email = document.getElementById('login-email')?.value.trim();
   const pw    = document.getElementById('login-password')?.value;
   if (!email || !pw) { document.getElementById('login-error').textContent = 'Renseignez email et mot de passe'; return; }
   const btn = document.getElementById('login-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Connexion…'; }
-  // fbLogin est défini dans le module Firebase ci-dessous
-  if (window.fbLogin) {
-    fbLogin(email, pw);
-  } else {
-    // Module pas encore chargé — attendre
-    const t = setInterval(() => {
-      if (window.fbLogin) { clearInterval(t); fbLogin(email, pw); }
-    }, 200);
-  }
+  fbLogin(email, pw);
 }
 </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
   import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, getDoc }
     from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDOgRTwiiJpeO4jkC02br1FRWHrY8EhwmA",
@@ -48,66 +101,21 @@ function doLogin() {
 
   const app  = initializeApp(firebaseConfig);
   const db   = getFirestore(app);
-  const auth = getAuth(app);
 
-  // ── Auth state → afficher/cacher l'app ──
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      window._fbUser = { email: user.email, uid: user.uid };
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app-shell').style.display   = 'flex';
-      const el = document.getElementById('user-display');
-      if (el) el.textContent = user.email.split('@')[0];
-      const av = document.getElementById('user-avatar');
-      if (av) av.textContent = user.email[0].toUpperCase();
-      if (!window._appInited) { window._appInited = true; if (typeof init === 'function') init(); }
-      // Activer le bouton login si visible
-      const btn = document.getElementById('login-btn');
-      if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; btn.style.opacity = '1'; }
-      const st = document.getElementById('fb-init-status');
-      if (st) { st.textContent = '🔒 Connecté'; st.style.color = 'var(--green)'; }
-    } else {
-      window._fbUser = null;
-      document.getElementById('login-screen').style.display = 'flex';
-      document.getElementById('app-shell').style.display   = 'none';
-    }
-  });
-
-  // ── fbLogin utilise le SDK Firebase Auth (authentifie aussi Firestore) ──
-  window.fbLogin = async (email, password) => {
-    const errEl = document.getElementById('login-error');
-    const btn   = document.getElementById('login-btn');
-    errEl.textContent = '';
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged s'occupe du reste
-    } catch(e) {
-      const code = e.code || '';
-      errEl.textContent =
-        code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')
-          ? 'Email ou mot de passe incorrect'
-          : code.includes('too-many-requests')
-          ? 'Trop de tentatives — réessayez plus tard'
-          : 'Erreur : ' + e.message;
-      if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; }
-    }
-  };
-
-  window.fbLogout = () => signOut(auth);
-
-  // ── Activer le bouton dès que le module est chargé ──
-  window.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('login-btn');
-    const st  = document.getElementById('fb-init-status');
-    if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; btn.style.opacity = '1'; }
-    if (st)  { st.textContent = '🔒 Connexion sécurisée'; st.style.color = 'var(--green)'; }
-  });
-
-  // ── Sync flag (évite les boucles) ──
+  // ── Sync flag ──
   let _fbSyncing = false;
 
-  // ── Expose DB sur window pour le reste de l'app ──
+  // ── Expose DB ──
   window._fb = { db, setDoc, doc, collection, deleteDoc, onSnapshot };
+
+  console.log("✅ Carlton Lab — Firebase Firestore connecté");
+  window._fbReady = true;
+
+  // Mettre à jour le statut
+  setTimeout(() => {
+    const st = document.getElementById('fb-init-status');
+    if (st) { st.textContent = '🟢 Sync'; st.style.color = 'var(--green)'; }
+  }, 1000);
 
   // ══════════════════════════════════════════════════════
   //  ORDRES — sync temps réel
