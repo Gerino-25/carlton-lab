@@ -750,7 +750,7 @@ select option { background: var(--s2); }
     <div style="text-align:center;margin-bottom:28px">
       <h1 style="font-family:var(--font-h);font-size:2rem;font-weight:800;letter-spacing:-.02em;color:var(--text)">Carlton<span style="color:var(--teal)">Lab</span></h1>
       <p style="color:var(--muted);font-size:.75rem;margin-top:4px">Suite d'analyse · Carlton Selection</p>
-      <p id="fb-init-status" style="color:var(--amber);font-size:.65rem;margin-top:6px">⏳ Connexion à Firebase…</p>
+      <p id="fb-init-status" style="color:var(--green);font-size:.65rem;margin-top:6px">🔒 Connexion sécurisée</p>
     </div>
     <!-- Form -->
     <div style="display:flex;flex-direction:column;gap:12px">
@@ -769,11 +769,10 @@ select option { background: var(--s2); }
           onkeydown="if(event.key==='Enter')doLogin()">
       </div>
       <div id="login-error" style="color:var(--red);font-size:.72rem;min-height:18px;text-align:center"></div>
-      <button onclick="doLogin()" disabled
-        style="background:var(--teal);color:#08090c;font-family:var(--font-h);font-weight:700;font-size:.82rem;padding:11px;border:none;border-radius:8px;cursor:pointer;transition:opacity .15s;margin-top:4px;opacity:.6"
-        onmouseover="if(!this.disabled)this.style.opacity='.85'" onmouseout="if(!this.disabled)this.style.opacity='1'"
-        id="login-btn">
-        ⏳ Chargement…
+      <button onclick="doLogin()" id="login-btn"
+        style="background:var(--teal);color:#08090c;font-family:var(--font-h);font-weight:700;font-size:.82rem;padding:11px;border:none;border-radius:8px;cursor:pointer;transition:opacity .15s;margin-top:4px"
+        onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        Se connecter →
       </button>
     </div>
     <p style="color:var(--muted);font-size:.62rem;text-align:center;margin-top:20px">
