@@ -605,6 +605,64 @@ select option { background: var(--s2); }
 
 /* Section divider */
 .section-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+/* ══ CARLTON TOP NAV ══ */
+#ct-nav{position:fixed;top:0;left:0;right:0;height:48px;display:none;align-items:center;padding:0 16px;background:#1B3A6B;border-bottom:2px solid #E8A020;z-index:1000;gap:0}
+#ct-nav.ct-visible{display:flex}
+.ct-logo{font-size:15px;font-weight:700;color:#fff;margin-right:6px;font-family:var(--font-h)}
+.ct-logo span{color:#40d8ff}
+.ct-logo-box{width:28px;height:28px;background:rgba(255,255,255,0.15);border-radius:6px;margin-right:10px;flex-shrink:0}
+.ct-tab{padding:0 14px;height:48px;font-size:12px;cursor:pointer;color:#fff;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:400;font-family:var(--font-h);white-space:nowrap}
+.ct-tab.ct-db{border-bottom-color:#E8A020;font-weight:600}
+.ct-tab.ct-mod{background:#E8A020;color:#fff;font-weight:600;border-bottom-color:#E8A020}
+.ct-tab:hover:not(.ct-db):not(.ct-mod){background:rgba(255,255,255,0.08)}
+/* Layer overlay */
+#ct-layer{position:fixed;top:48px;left:0;right:0;bottom:0;display:none;z-index:999;background:var(--bg)}
+#ct-layer.ct-on{display:flex}
+#ct-syno-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border)}
+.ct-ph{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--s1)}
+.ct-ph-title{font-size:12px;font-weight:600;color:var(--text)}
+.ct-ph-badge{font-size:10px;padding:1px 6px;border-radius:99px;background:var(--s2);color:var(--muted)}
+.ct-sgrid{flex:1;overflow-y:auto}
+.ct-sh{display:grid;grid-template-columns:1fr 58px 54px 54px 54px 50px;padding:5px 13px;border-bottom:1px solid var(--border);background:var(--s2);position:sticky;top:0;z-index:2}
+.ct-sh span{font-size:10px;color:var(--muted);font-weight:600;text-align:right}
+.ct-sh span:first-child{text-align:left}
+.ct-sr{display:grid;grid-template-columns:1fr 58px 54px 54px 54px 50px;padding:5px 13px;border-bottom:1px solid var(--border);cursor:pointer;align-items:center}
+.ct-sr:hover{background:var(--s2)}
+.ct-sr.ct-grp{background:var(--s2);pointer-events:none}
+.ct-sn{font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-ss{font-size:10px;color:var(--muted)}
+.ct-sv{font-size:11px;color:var(--text);text-align:right}
+.ct-pos{color:var(--green)}.ct-neg{color:var(--red)}.ct-neut{color:var(--muted)}
+.ct-pill{font-size:10px;padding:1px 5px;border-radius:4px;justify-self:end}
+/* Right panel */
+#ct-rp{width:245px;min-width:245px;display:flex;flex-direction:column;overflow:hidden;background:#1B3A6B;transition:width .18s;flex-shrink:0}
+#ct-rp.ct-hidden{width:0;min-width:0;overflow:hidden}
+.ct-rph{padding:9px 13px 8px;border-bottom:0.5px solid rgba(255,255,255,0.15);flex-shrink:0}
+.ct-rph-title{font-size:12px;font-weight:600;color:#fff}
+.ct-rph-sub{font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px}
+.ct-mg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px;flex-shrink:0}
+.ct-mb{background:rgba(255,255,255,0.08);border:0.5px solid rgba(255,255,255,0.18);border-radius:8px;padding:9px 5px 7px;cursor:pointer;text-align:center}
+.ct-mb:hover{background:rgba(255,255,255,0.15)}
+.ct-mb.ct-ma{background:#E8A020;border-color:#E8A020}
+.ct-mi{font-size:14px;color:#40d8ff;margin-bottom:4px;display:block}
+.ct-mb.ct-ma .ct-mi{color:#fff}
+.ct-ml{font-size:10px;color:#fff;line-height:1.3;display:block}
+.ct-rc{flex:1;overflow-y:auto;padding:8px 10px}
+.ct-rcard{background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.13);border-radius:8px;padding:10px 11px;margin-bottom:8px}
+.ct-rl{font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:3px}
+.ct-rv{font-size:17px;font-weight:500;color:#E8A020}
+.ct-rs{font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px;line-height:1.4}
+.ct-rpi{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;cursor:pointer;margin-bottom:3px;background:transparent;border:none;width:100%;text-align:left}
+.ct-rpi:hover{background:rgba(255,255,255,0.08)}
+.ct-rpii{font-size:13px;color:#40d8ff;width:20px;text-align:center;flex-shrink:0}
+.ct-rpil{font-size:11px;color:#fff}
+.ct-rpis{font-size:10px;color:rgba(255,255,255,0.45)}
+.ct-divider{height:0.5px;background:rgba(255,255,255,0.1);margin:6px 10px}
+.ct-br{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.ct-bl{font-size:10px;color:rgba(255,255,255,0.65);width:46px;flex-shrink:0}
+.ct-bt{flex:1;height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden}
+.ct-bf{height:100%;border-radius:3px}
+.ct-bv{font-size:10px;color:rgba(255,255,255,0.65);width:26px;text-align:right;flex-shrink:0}
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -783,6 +841,38 @@ select option { background: var(--s2); }
 
 <!-- ═══════════════ APP SHELL ═══════════════ -->
 <div id="app-shell" style="display:none;width:100%;height:100vh">
+<!-- ══ CARLTON TOP NAV (coller juste après <div id="app-shell" ...>) ══ -->
+<div id="ct-nav">
+  <div class="ct-logo">Carlton<span>Lab</span></div>
+  <div class="ct-logo-box"></div>
+  <button class="ct-tab ct-db" onclick="ctSwitch('dashboard',this)">Dashboard</button>
+  <button class="ct-tab" onclick="ctSwitch('analyse',this)">Analyse</button>
+  <button class="ct-tab" onclick="ctSwitch('operations',this)">Opérations</button>
+  <button class="ct-tab" onclick="ctSwitch('conformite',this)">Conformité</button>
+  <button class="ct-tab" onclick="ctSwitch('reporting',this)">Reporting</button>
+  <button class="ct-tab" onclick="ctSwitch('commercial',this)">Commercial</button>
+</div>
+
+<!-- ══ CARLTON LAYER (Dashboard + volets droits) ══ -->
+<div id="ct-layer">
+  <div id="ct-syno-wrap">
+    <div class="ct-ph">
+      <div class="ct-ph-title" id="ct-ph-title">Dashboard — Tous les portefeuilles</div>
+      <div class="ct-ph-badge" id="ct-ph-badge">—</div>
+    </div>
+    <div class="ct-sgrid">
+      <div class="ct-sh"><span>Portefeuille</span><span>Encours</span><span>J</span><span>MTD</span><span>YTD</span><span>Risk</span></div>
+      <div id="ct-tbody"></div>
+    </div>
+  </div>
+  <div id="ct-rp" class="ct-hidden">
+    <div class="ct-rph">
+      <div class="ct-rph-title" id="ct-rp-title">Modules</div>
+      <div class="ct-rph-sub" id="ct-rp-sub"></div>
+    </div>
+    <div id="ct-rp-body" style="flex:1;display:flex;flex-direction:column;overflow:hidden"></div>
+  </div>
+</div>
 <div class="shell">
 
 <!-- ═══════════════ SIDEBAR ═══════════════ -->
@@ -5854,6 +5944,235 @@ function ftbRenderTicket(o) {
 
 
 function ftbInit(){ftbRenderFundCards();ftbRenderOMS();ftbRunCompliance();ftbUpdateClock();setInterval(ftbUpdateClock,1000);}
+// ══════════════════════════════════════════
+//  CARLTON TOP NAVIGATION
+// ══════════════════════════════════════════
+
+// Données synoptique (extensions des fonds FTB + extras)
+const CT_FUNDS = [
+  { group:'OPC Carlton' },
+  { name:'Calipso A',          sub:'Court terme IG',       encours:'214M€', j:'+0.12%', mtd:'+0.31%', ytd:'+1.24%', risk:'Faible',  rc:'rgba(29,158,117,0.12)', rt:'#1D9E75', fid:'calipso' },
+  { name:'Carlton Select World',sub:'Actions globales',    encours:'198M€', j:'-0.34%', mtd:'-1.12%', ytd:'-2.18%', risk:'Élevé',   rc:'rgba(216,90,48,0.12)',  rt:'#D85A30', fid:'csw' },
+  { name:'Carlton Select Invest',sub:'Multi-actifs',       encours:'87M€',  j:'+0.08%', mtd:'+0.19%', ytd:'+0.74%', risk:'Modéré',  rc:'rgba(232,160,32,0.12)', rt:'#BA7517', fid:'csi' },
+  { group:'Mandats institutionnels' },
+  { name:'OPAC 36',            sub:'Mandat souverain',     encours:'42M€',  j:'+0.05%', mtd:'+0.14%', ytd:'+0.88%', risk:'Faible',  rc:'rgba(29,158,117,0.12)', rt:'#1D9E75' },
+  { name:'Collectivité A',     sub:'Mandat diversifié',    encours:'28M€',  j:'-0.11%', mtd:'-0.28%', ytd:'+0.42%', risk:'Modéré',  rc:'rgba(232,160,32,0.12)', rt:'#BA7517' },
+  { name:'Prévoyance B',       sub:'Mandat obligataire',   encours:'19M€',  j:'+0.02%', mtd:'+0.09%', ytd:'+0.61%', risk:'Faible',  rc:'rgba(29,158,117,0.12)', rt:'#1D9E75' },
+  { group:'PEA / CTO' },
+  { name:'PEA L. Devouge',     sub:'Actions Europe',       encours:'1.2M€', j:'+0.19%', mtd:'-0.44%', ytd:'-1.07%', risk:'Élevé',   rc:'rgba(216,90,48,0.12)',  rt:'#D85A30' },
+  { name:'PEA PL',             sub:'Actions Europe',       encours:'0.9M€', j:'-0.07%', mtd:'-0.31%', ytd:'-0.88%', risk:'Élevé',   rc:'rgba(216,90,48,0.12)',  rt:'#D85A30' },
+  { name:'PEA LD',             sub:'Actions Europe',       encours:'0.7M€', j:'+0.03%', mtd:'-0.18%', ytd:'+0.24%', risk:'Élevé',   rc:'rgba(216,90,48,0.12)',  rt:'#D85A30' },
+  { name:'CTO Uglima',         sub:'Diversifié',           encours:'2.1M€', j:'-0.21%', mtd:'-0.67%', ytd:'-1.44%', risk:'Modéré',  rc:'rgba(232,160,32,0.12)', rt:'#BA7517' },
+  { group:'FCPE' },
+  { name:'FCPE Amiral',        sub:'Abs. return oblig.',   encours:'—',     j:'+0.14%', mtd:'+0.38%', ytd:'+1.11%', risk:'Faible',  rc:'rgba(29,158,117,0.12)', rt:'#1D9E75' },
+  { name:'FCPE Amundi',        sub:'Abs. return oblig.',   encours:'—',     j:'-0.04%', mtd:'+0.11%', ytd:'+0.52%', risk:'Faible',  rc:'rgba(29,158,117,0.12)', rt:'#1D9E75' },
+  { name:'FCPE Candriam',      sub:'Abs. return oblig.',   encours:'—',     j:'+0.09%', mtd:'+0.22%', ytd:'+0.79%', risk:'Faible',  rc:'rgba(29,158,117,0.12)', rt:'#1D9E75' },
+  { name:'FCPE DNCA',          sub:'Abs. return oblig.',   encours:'—',     j:'+0.06%', mtd:'+0.17%', ytd:'+0.63%', risk:'Faible',  rc:'rgba(29,158,117,0.12)', rt:'#1D9E75' },
+  { name:'FCPE Lazard',        sub:'Abs. return oblig.',   encours:'—',     j:'-0.15%', mtd:'-0.33%', ytd:'-0.41%', risk:'Modéré',  rc:'rgba(232,160,32,0.12)', rt:'#BA7517' },
+  { name:'FCPE Neuberger',     sub:'Abs. return oblig.',   encours:'—',     j:'+0.11%', mtd:'+0.28%', ytd:'+0.94%', risk:'Faible',  rc:'rgba(29,158,117,0.12)', rt:'#1D9E75' },
+  { group:'Autres' },
+  { name:'Phoenix A USD',      sub:'Actions globales',     encours:'20M€',  j:'-0.28%', mtd:'-0.91%', ytd:'-1.83%', risk:'Élevé',   rc:'rgba(216,90,48,0.12)',  rt:'#D85A30' },
+  { name:'Modèle ESG Art.8',   sub:'Benchmark interne',    encours:'—',     j:'+0.07%', mtd:'-0.14%', ytd:'-0.55%', risk:'Modéré',  rc:'rgba(232,160,32,0.12)', rt:'#BA7517' },
+  { name:'Benchmark IG Euro',  sub:'Indice de référence',  encours:'—',     j:'-0.01%', mtd:'+0.08%', ytd:'+0.67%', risk:'Réf.',    rc:'rgba(136,135,128,0.12)',rt:'#5F5E5A' },
+];
+
+const CT_PANELS = {
+  analyse: {
+    title:"Modules d'analyse", sub:"Calipso A sélectionné",
+    modules:[
+      {i:'◈',l:'Spread crédit', a:()=>{ctHide();switchApp('duration');setTimeout(()=>switchDurPane('spreads'),150);}},
+      {i:'△',l:'Duration',      a:()=>{ctHide();switchApp('duration');}},
+      {i:'⊘',l:'VaR / CVaR',   a:()=>{}},
+      {i:'◎',l:'Score ESG',    a:()=>{}},
+      {i:'↕',l:'Arbitrage',    a:()=>{ctHide();switchApp('obligations');}},
+      {i:'⬡',l:'Optimisation', a:()=>{}},
+      {i:'◱',l:'Attribution',  a:()=>{ctHide();switchApp('perf');setTimeout(()=>perfSwitchTab('attrib'),150);}},
+      {i:'⊞',l:'Historique',   a:()=>{ctHide();switchApp('ftb');setTimeout(()=>ftbNav('historique'),150);}},
+    ],
+    extra:`<div class="ct-rcard"><div class="ct-rl">Spread moyen pondéré</div><div class="ct-rv">+91 bp</div><div class="ct-rs">vs benchmark IG Euro +67bp · écart +24bp</div></div>
+    <div class="ct-rcard"><div class="ct-rl">Répartition par notation</div><div style="margin-top:8px">
+    <div class="ct-br"><div class="ct-bl">AA/AAA</div><div class="ct-bt"><div class="ct-bf" style="width:18%;background:#40d8ff"></div></div><div class="ct-bv">18%</div></div>
+    <div class="ct-br"><div class="ct-bl">A</div><div class="ct-bt"><div class="ct-bf" style="width:41%;background:#40d8ff"></div></div><div class="ct-bv">41%</div></div>
+    <div class="ct-br"><div class="ct-bl">BBB</div><div class="ct-bt"><div class="ct-bf" style="width:35%;background:#E8A020"></div></div><div class="ct-bv">35%</div></div>
+    <div class="ct-br"><div class="ct-bl">NR/HY</div><div class="ct-bt"><div class="ct-bf" style="width:6%;background:#D85A30"></div></div><div class="ct-bv">6%</div></div>
+    </div></div>`
+  },
+  operations: {
+    title:'Opérations', sub:'Flux & ordres du jour',
+    kpi:{l:'Ordres en attente', v:'7', s:'4 à signer · 3 en cours', fid:'ftb', mod:'oms'},
+    items:[
+      {i:'⇄',l:'Ordres en cours',       s:'Suivi temps réel', a:()=>{ctHide();switchApp('ftb');setTimeout(()=>ftbNav('oms'),150);}},
+      {i:'↓',l:'Souscriptions/Rachats', s:'Calipso A · CSW · CSI', a:()=>{}},
+      {i:'✓',l:'Règlement-livraison',   s:'J+2 · Euroclear', a:()=>{ctHide();switchApp('ftb');setTimeout(()=>ftbNav('cash'),150);}},
+      {i:'↻',l:'Virements',            s:'CACEIS · flux cash', a:()=>{}},
+      {i:'◷',l:'Historique ordres',    s:'30 derniers jours', a:()=>{ctHide();switchApp('ftb');setTimeout(()=>ftbNav('oms'),150);}},
+    ]
+  },
+  conformite: {
+    title:'Conformité', sub:'Contrôles réglementaires',
+    kpi:{l:'Alertes actives', v:'2', s:'CSW · ratio diversification', color:'#D85A30'},
+    items:[
+      {i:'⊘',l:'Ratios réglementaires', s:'AMF · OPCVM', a:()=>{ctHide();switchApp('ftb');setTimeout(()=>ftbNav('compliance'),150);}},
+      {i:'◎',l:'SFDR Article 8',        s:'Calipso A · en cours', a:()=>{}},
+      {i:'△',l:'Alertes dépassement',   s:'2 actives', a:()=>{ctHide();switchApp('ftb');setTimeout(()=>ftbNav('compliance'),150);}},
+      {i:'⊞',l:'Historique contrôles',  s:'Traçabilité complète', a:()=>{}},
+      {i:'◱',l:'LMT / Swing pricing',   s:'AIFMD 2 · UCITS 6', a:()=>{}},
+    ]
+  },
+  reporting: {
+    title:'Reporting', sub:'Documents & envois',
+    kpi:{l:'Prochain rapport', v:'31 mars 2026', s:'Commentaires gestion · 3 fonds', color:'#40d8ff'},
+    items:[
+      {i:'◫',l:'Rapports mensuels',     s:'PDF · Word · Sharepoint', a:()=>{ctHide();switchApp('ftb');setTimeout(()=>ftbNav('reporting'),150);}},
+      {i:'✎',l:'Commentaires gestion',  s:'Génération assistée IA', a:()=>{}},
+      {i:'↑',l:'Envoi automatique',     s:'Clients · AMF · CACEIS', a:()=>{}},
+      {i:'⊞',l:'Historique des envois', s:'Accusés de réception', a:()=>{}},
+    ]
+  },
+  commercial: {
+    title:'Commercial', sub:'Relation investisseurs',
+    kpi:{l:'Pitches en cours', v:'3', s:'OPAC 36 · Prévoyance C · FCPE X', color:'#40d8ff'},
+    items:[
+      {i:'◈',l:'Plaquettes fonds',       s:'Données temps réel', a:()=>{}},
+      {i:'↕',l:'Pitches & mandats',      s:'Simulations · PDF', a:()=>{}},
+      {i:'◎',l:'Suivi clients',          s:'Contacts · relances', a:()=>{}},
+      {i:'⬡',l:'Souscriptions entrantes',s:'Pipeline commercial', a:()=>{}},
+    ]
+  }
+};
+
+function ctSwitch(name, btn) {
+  document.querySelectorAll('.ct-tab').forEach(t=>t.classList.remove('ct-db','ct-mod'));
+  const layer = document.getElementById('ct-layer');
+  const rp    = document.getElementById('ct-rp');
+  const title = document.getElementById('ct-ph-title');
+
+  layer.classList.add('ct-on');
+  if (name === 'dashboard') {
+    btn.classList.add('ct-db');
+    rp.classList.add('ct-hidden');
+    title.textContent = 'Dashboard — Tous les portefeuilles';
+  } else {
+    btn.classList.add('ct-mod');
+    rp.classList.remove('ct-hidden');
+    title.textContent = 'Tableau synoptique';
+    ctOpenPanel(name);
+  }
+  ctRenderSyno();
+}
+
+function ctOpenPanel(name) {
+  const p = CT_PANELS[name];
+  if (!p) return;
+  document.getElementById('ct-rp-title').textContent = p.title;
+  document.getElementById('ct-rp-sub').textContent   = p.sub;
+  const body = document.getElementById('ct-rp-body');
+
+  // Modules grid (for analyse)
+  let html = '';
+  if (p.modules) {
+    html += '<div class="ct-mg">';
+    p.modules.forEach((m,i)=>{
+      const _a = m.a;
+      html += `<button class="ct-mb${i===0?' ct-ma':''}" onclick="_ctPanelActions[${name}_${i}]()">`
+            + `<span class="ct-mi">${m.i}</span><span class="ct-ml">${m.l}</span></button>`;
+    });
+    html += '</div>';
+    // store actions
+    p.modules.forEach((m,i)=>{ window['_ctact_'+name+'_'+i] = m.a; });
+    // fix: use data-attr onclick
+  }
+
+  // KPI card
+  if (p.kpi) {
+    const col = p.kpi.color || '#E8A020';
+    html += `<div class="ct-rc"><div class="ct-rcard">
+      <div class="ct-rl">${p.kpi.l}</div>
+      <div class="ct-rv" style="color:${col};font-size:${p.kpi.v.length>6?'13px':'17px'}">${p.kpi.v}</div>
+      <div class="ct-rs">${p.kpi.s}</div>
+    </div><div class="ct-divider"></div>`;
+  } else if (p.extra) {
+    html += `<div class="ct-rc">${p.extra}`;
+  } else {
+    html += '<div class="ct-rc">';
+  }
+
+  // Items list
+  if (p.items) {
+    p.items.forEach((item,i)=>{
+      window['_ctitem_'+name+'_'+i] = item.a;
+      html += `<button class="ct-rpi" onclick="window['_ctitem_${name}_${i}']()">
+        <span class="ct-rpii">${item.i}</span>
+        <div><div class="ct-rpil">${item.l}</div><div class="ct-rpis">${item.s||''}</div></div>
+      </button>`;
+    });
+  }
+  html += '</div>';
+
+  // Modules onclick fix
+  if (p.modules) {
+    body.innerHTML = html;
+    body.querySelectorAll('.ct-mb').forEach((btn,i)=>{
+      btn.onclick = ()=>{ body.querySelectorAll('.ct-mb').forEach(b=>b.classList.remove('ct-ma')); btn.classList.add('ct-ma'); p.modules[i].a(); };
+    });
+  } else {
+    body.innerHTML = html;
+  }
+}
+
+function ctRenderSyno() {
+  const el = document.getElementById('ct-tbody');
+  let html = '';
+  let count = 0;
+  CT_FUNDS.forEach(f => {
+    if (f.group) {
+      html += `<div class="ct-sr ct-grp"><span class="ct-sn" style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">${f.group}</span></div>`;
+    } else {
+      count++;
+      const jc = f.j.startsWith('+') ? 'ct-pos' : f.j.startsWith('-') ? 'ct-neg' : 'ct-neut';
+      const mc = f.mtd.startsWith('+') ? 'ct-pos' : f.mtd.startsWith('-') ? 'ct-neg' : 'ct-neut';
+      const yc = f.ytd.startsWith('+') ? 'ct-pos' : f.ytd.startsWith('-') ? 'ct-neg' : 'ct-neut';
+      html += `<div class="ct-sr" onclick="ctSelectFund('${f.name}',this)">
+        <div><div class="ct-sn">${f.name}</div><div class="ct-ss">${f.sub}</div></div>
+        <div class="ct-sv">${f.encours}</div>
+        <div class="ct-sv ${jc}">${f.j}</div>
+        <div class="ct-sv ${mc}">${f.mtd}</div>
+        <div class="ct-sv ${yc}">${f.ytd}</div>
+        <div class="ct-pill" style="background:${f.rc};color:${f.rt}">${f.risk}</div>
+      </div>`;
+    }
+  });
+  el.innerHTML = html;
+  document.getElementById('ct-ph-badge').textContent = count + ' portefeuilles';
+}
+
+function ctSelectFund(name, row) {
+  document.querySelectorAll('.ct-sr').forEach(r=>r.classList.remove('ct-sel'));
+  row.classList.add('ct-sel');
+  const f = CT_FUNDS.find(x=>x.name===name);
+  if (f && f.fid) {
+    // Update panel sub-title if open
+    const sub = document.getElementById('ct-rp-sub');
+    if (sub) sub.textContent = name + ' sélectionné';
+  }
+}
+
+function ctHide() {
+  document.getElementById('ct-layer').classList.remove('ct-on');
+  document.querySelectorAll('.ct-tab').forEach(t=>t.classList.remove('ct-db','ct-mod'));
+}
+
+// Show top nav when app-shell is visible
+(function ctInit() {
+  const orig = window._showApp;
+  window._showApp = function(user) {
+    orig && orig.call(this, user);
+    document.getElementById('ct-nav').classList.add('ct-visible');
+    // Adjust shell height for topbar
+    const shell = document.querySelector('.shell');
+    if (shell) { shell.style.height = 'calc(100vh - 48px)'; shell.style.marginTop = '48px'; }
+  };
+})();
 
 // Init is triggered by Firebase Auth — fallback after 4s if Firebase not available
 setTimeout(() => { if (!window._appInited) { window._appInited = true; init(); } }, 4000);
