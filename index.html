@@ -27,12 +27,6 @@ function _showApp(user) {
   if (av) av.textContent = user.email[0].toUpperCase();
   if (!window._appInited) { window._appInited = true; if (typeof init === 'function') init(); }
   if (window.fbStartListeners) fbStartListeners();
-  setTimeout(()=>{
-    const n=document.getElementById('ct-nav');
-    if(n){n.style.display='flex';}
-    const s=document.querySelector('.shell');
-    if(s){s.style.height='calc(100vh - 48px)';s.style.marginTop='48px';}
-  },200);
 }
 
 // Activer le bouton immédiatement
@@ -847,6 +841,19 @@ select option { background: var(--s2); }
 
 <!-- ═══════════════ APP SHELL ═══════════════ -->
 <div id="app-shell" style="display:none;width:100%;height:100vh">
+<!-- ══ CARLTON TOP NAV (coller juste après <div id="app-shell" ...>) ══ -->
+<div id="ct-nav">
+  <div class="ct-logo">Carlton<span>Lab</span></div>
+  <div class="ct-logo-box"></div>
+  <button class="ct-tab ct-db" onclick="ctSwitch('dashboard',this)">Dashboard</button>
+  <button class="ct-tab" onclick="ctSwitch('analyse',this)">Analyse</button>
+  <button class="ct-tab" onclick="ctSwitch('operations',this)">Opérations</button>
+  <button class="ct-tab" onclick="ctSwitch('conformite',this)">Conformité</button>
+  <button class="ct-tab" onclick="ctSwitch('reporting',this)">Reporting</button>
+  <button class="ct-tab" onclick="ctSwitch('commercial',this)">Commercial</button>
+</div>
+
+<!-- ══ CARLTON LAYER (Dashboard + volets droits) ══ -->
 <div id="ct-layer">
   <div id="ct-syno-wrap">
     <div class="ct-ph">
@@ -6172,18 +6179,5 @@ setTimeout(() => { if (!window._appInited) { window._appInited = true; init(); }
 
 
 </script>
-
-<!-- ══ CARLTON TOP NAV — hors app-shell ══ -->
-<div id="ct-nav" style="display:none;position:fixed;top:0;left:0;right:0;height:48px;align-items:center;padding:0 16px;background:#1B3A6B;border-bottom:2px solid #E8A020;z-index:10000;gap:0;font-family:'Syne',sans-serif">
-  <div class="ct-logo">Carlton<span>Lab</span></div>
-  <div class="ct-logo-box"></div>
-  <button class="ct-tab ct-db" onclick="ctSwitch('dashboard',this)">Dashboard</button>
-  <button class="ct-tab" onclick="ctSwitch('analyse',this)">Analyse</button>
-  <button class="ct-tab" onclick="ctSwitch('operations',this)">Opérations</button>
-  <button class="ct-tab" onclick="ctSwitch('conformite',this)">Conformité</button>
-  <button class="ct-tab" onclick="ctSwitch('reporting',this)">Reporting</button>
-  <button class="ct-tab" onclick="ctSwitch('commercial',this)">Commercial</button>
-</div>
-
 </body>
 </html>
