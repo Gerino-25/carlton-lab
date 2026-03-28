@@ -11,90 +11,30 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <!-- Auth indépendant — s'exécute immédiatement sans attendre Firebase -->
 <script>
-const _FB_API_KEY = 'AIzaSyDOgRTwiiJpeO4jkC02br1FRWHrY8EhwmA';
-
-// Vérifier session existante
-const _storedUser = (() => { try { return JSON.parse(localStorage.getItem('cl_user')); } catch(e) { return null; } })();
-
-function _showApp(user) {
-  window._fbUser = user;
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app-shell').style.display = 'flex';
-  const el = document.getElementById('user-display');
-  if (el) el.textContent = user.email.split('@')[0];
-  const av = document.getElementById('user-avatar');
-  if (av) av.textContent = user.email[0].toUpperCase();
-  if (!window._appInited) { window._appInited = true; if (typeof init === 'function') init(); }
-}
-
-if (_storedUser?.email) {
-  // Session mémorisée — afficher l'app directement
-  window.addEventListener('DOMContentLoaded', () => _showApp(_storedUser));
-} else {
-  // Activer le bouton dès que la page est chargée
-  window.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('login-btn');
-    const st  = document.getElementById('fb-init-status');
-    if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; btn.style.opacity = '1'; }
-    if (st)  { st.textContent = '🔒 Connexion sécurisée'; st.style.color = '#00c8ff'; }
-  });
-}
-
-window.fbLogin = async (email, password) => {
-  const errEl = document.getElementById('login-error');
-  const btn   = document.getElementById('login-btn');
-  errEl.textContent = '';
-  if (btn) { btn.disabled = true; btn.textContent = 'Connexion…'; }
-  try {
-    const res = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${_FB_API_KEY}`,
-      { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email, password, returnSecureToken: true }) }
-    );
-    const data = await res.json();
-    if (data.error) {
-      const code = data.error.message || '';
-      errEl.textContent =
-        code.includes('INVALID_LOGIN') || code.includes('INVALID_PASSWORD') || code.includes('EMAIL_NOT_FOUND')
-          ? 'Email ou mot de passe incorrect'
-          : code.includes('TOO_MANY')
-          ? 'Trop de tentatives — réessayez plus tard'
-          : 'Erreur : ' + code;
-      if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; }
-      return;
-    }
-    const user = { email: data.email, uid: data.localId, token: data.idToken };
-    localStorage.setItem('cl_user', JSON.stringify(user));
-    _showApp(user);
-  } catch(e) {
-    errEl.textContent = 'Erreur réseau — vérifiez votre connexion internet';
-    if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; }
-  }
-};
-
-window.fbLogout = () => {
-  localStorage.removeItem('cl_user');
-  window._fbUser = null;
-  window._appInited = false;
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('app-shell').style.display = 'none';
-  const btn = document.getElementById('login-btn');
-  if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; }
-  document.getElementById('login-email').value = '';
-  document.getElementById('login-password').value = '';
-};
-
+// doLogin appelé par le bouton — délègue au SDK Firebase Auth dans le module
 function doLogin() {
   const email = document.getElementById('login-email')?.value.trim();
   const pw    = document.getElementById('login-password')?.value;
   if (!email || !pw) { document.getElementById('login-error').textContent = 'Renseignez email et mot de passe'; return; }
-  fbLogin(email, pw);
+  const btn = document.getElementById('login-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Connexion…'; }
+  // fbLogin est défini dans le module Firebase ci-dessous
+  if (window.fbLogin) {
+    fbLogin(email, pw);
+  } else {
+    // Module pas encore chargé — attendre
+    const t = setInterval(() => {
+      if (window.fbLogin) { clearInterval(t); fbLogin(email, pw); }
+    }, 200);
+  }
 }
 </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
   import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, getDoc }
     from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDOgRTwiiJpeO4jkC02br1FRWHrY8EhwmA",
@@ -106,8 +46,62 @@ function doLogin() {
     measurementId: "G-7R8F05XKLD"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
+  const app  = initializeApp(firebaseConfig);
+  const db   = getFirestore(app);
+  const auth = getAuth(app);
+
+  // ── Auth state → afficher/cacher l'app ──
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      window._fbUser = { email: user.email, uid: user.uid };
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-shell').style.display   = 'flex';
+      const el = document.getElementById('user-display');
+      if (el) el.textContent = user.email.split('@')[0];
+      const av = document.getElementById('user-avatar');
+      if (av) av.textContent = user.email[0].toUpperCase();
+      if (!window._appInited) { window._appInited = true; if (typeof init === 'function') init(); }
+      // Activer le bouton login si visible
+      const btn = document.getElementById('login-btn');
+      if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; btn.style.opacity = '1'; }
+      const st = document.getElementById('fb-init-status');
+      if (st) { st.textContent = '🔒 Connecté'; st.style.color = 'var(--green)'; }
+    } else {
+      window._fbUser = null;
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app-shell').style.display   = 'none';
+    }
+  });
+
+  // ── fbLogin utilise le SDK Firebase Auth (authentifie aussi Firestore) ──
+  window.fbLogin = async (email, password) => {
+    const errEl = document.getElementById('login-error');
+    const btn   = document.getElementById('login-btn');
+    errEl.textContent = '';
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // onAuthStateChanged s'occupe du reste
+    } catch(e) {
+      const code = e.code || '';
+      errEl.textContent =
+        code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')
+          ? 'Email ou mot de passe incorrect'
+          : code.includes('too-many-requests')
+          ? 'Trop de tentatives — réessayez plus tard'
+          : 'Erreur : ' + e.message;
+      if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; }
+    }
+  };
+
+  window.fbLogout = () => signOut(auth);
+
+  // ── Activer le bouton dès que le module est chargé ──
+  window.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('login-btn');
+    const st  = document.getElementById('fb-init-status');
+    if (btn) { btn.disabled = false; btn.textContent = 'Se connecter →'; btn.style.opacity = '1'; }
+    if (st)  { st.textContent = '🔒 Connexion sécurisée'; st.style.color = 'var(--green)'; }
+  });
 
   // ── Sync flag (évite les boucles) ──
   let _fbSyncing = false;
@@ -1285,11 +1279,12 @@ select option { background: var(--s2); }
 ════════════════════════════════════════════ -->
 <div id="app-duration" class="app-container">
   <div class="topbar">
-    <h2><em>Duration & Sensibilité</em><span class="sub">Macaulay · Modifiée · DV01 · Convexité</span></h2>
+    <h2><em>Duration & Sensibilité</em><span class="sub">Macaulay · Modifiée · DV01 · Convexité · Spreads</span></h2>
     <div class="nav-pills">
       <button class="pill active" onclick="switchDurPane('obligation')">Obligation</button>
       <button class="pill" onclick="switchDurPane('scenarios')">Scénarios taux</button>
       <button class="pill" onclick="switchDurPane('portefeuille')">Portefeuille</button>
+      <button class="pill" onclick="switchDurPane('spreads')">Spreads crédit</button>
     </div>
   </div>
   <div class="content">
@@ -1452,6 +1447,59 @@ select option { background: var(--s2); }
         <div class="chart-card-title">Contribution à la duration par ligne</div>
         <div class="chart-wrap-sm"><canvas id="chart-ptf-dur"></canvas></div>
       </div>
+    </div>
+
+    <!-- PANE : SPREADS DE CRÉDIT -->
+    <div id="dur-pane-spreads" class="pane">
+
+      <!-- KPIs globaux -->
+      <div class="kpi-row" id="spread-kpis" style="margin-bottom:14px"></div>
+
+      <!-- Sélecteur fonds -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span style="font-size:.72rem;color:var(--muted)">Fonds :</span>
+        <select id="spread-fund-select" onchange="renderSpreads()"
+          style="background:var(--s2);border:1px solid var(--border2);color:var(--text);font-family:var(--font-h);font-size:.72rem;padding:5px 10px;border-radius:6px;outline:none">
+          <option value="calipso">Calipso A</option>
+          <option value="csw">Carlton Select World</option>
+          <option value="csi">Carlton Select Invest</option>
+          <option value="phoenix">Phoenix A USD</option>
+        </select>
+        <span style="font-size:.65rem;color:var(--muted)">Source : import CACEIS + QuantLib</span>
+      </div>
+
+      <!-- Graphique spread vs maturité -->
+      <div class="chart-card">
+        <div class="chart-card-title">Spread de crédit vs Maturité (bubble = valo)</div>
+        <div class="chart-wrap"><canvas id="chart-spread-scatter"></canvas></div>
+      </div>
+
+      <!-- Tableau détaillé -->
+      <div class="chart-card" style="margin-top:0">
+        <div class="chart-card-title">
+          Détail par ligne
+          <span style="font-size:.62rem;color:var(--muted);font-weight:400">— spread Z-spread vs swap EUR · calculé par QuantLib</span>
+        </div>
+        <div style="overflow-x:auto;max-height:52vh">
+          <table class="tbl tbl-pos" id="spread-table">
+            <thead><tr>
+              <th>Instrument</th><th>ISIN</th><th>Secteur</th>
+              <th class="r">Maturité</th><th class="r">Coupon</th>
+              <th class="r">Cours</th><th class="r">Valo k€</th>
+              <th class="r">Poids</th><th class="r">Spread (bp)</th>
+            </tr></thead>
+            <tbody id="spread-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Message vide -->
+      <div id="spread-empty" style="display:none;text-align:center;padding:40px;color:var(--muted);font-size:.82rem;line-height:1.9">
+        📐 Aucun spread disponible pour ce fonds.<br>
+        Importez un fichier CACEIS via <strong style="color:var(--text)">Front-to-Back → 📥 Alimentation</strong><br>
+        <span style="font-size:.72rem">Le feeder Python doit avoir QuantLib installé pour calculer les spreads.</span>
+      </div>
+
     </div>
 
   </div>
@@ -3456,10 +3504,136 @@ function switchDurPane(name) {
   document.querySelectorAll('#app-duration .pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('#app-duration .pill').forEach(p=>p.classList.remove('active'));
   document.getElementById('dur-pane-'+name).classList.add('active');
-  const panes = ['obligation','scenarios','portefeuille'];
+  const panes = ['obligation','scenarios','portefeuille','spreads'];
   document.querySelectorAll('#app-duration .pill')[panes.indexOf(name)]?.classList.add('active');
   if (name === 'scenarios') renderScenarios();
   if (name === 'portefeuille') renderPtfDur();
+  if (name === 'spreads') renderSpreads();
+}
+
+// ─── SPREADS DE CRÉDIT ───
+let _spreadChart = null;
+
+function renderSpreads() {
+  const fid      = document.getElementById('spread-fund-select')?.value || 'calipso';
+  const snaps    = window._fbSnapshots || {};
+  const tbody    = document.getElementById('spread-tbody');
+  const empty    = document.getElementById('spread-empty');
+  const kpiEl    = document.getElementById('spread-kpis');
+
+  // Chercher le snapshot le plus récent pour ce fonds
+  const fundSnaps = Object.values(snaps).filter(s => s.fid === fid)
+    .sort((a,b) => (b.dateRaw||'').localeCompare(a.dateRaw||''));
+
+  if (!fundSnaps.length) {
+    tbody.innerHTML = '';
+    if (empty) empty.style.display = '';
+    if (kpiEl) kpiEl.innerHTML = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  const snap = fundSnaps[0];
+  const positions = (snap.positions || []).filter(p => p.spread_bp != null);
+
+  if (!positions.length) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted);font-size:.78rem">
+      Spreads non encore calculés — installez QuantLib sur le PC feeder et relancez un import CACEIS.<br>
+      <code style="font-size:.65rem">pip install QuantLib yfinance</code>
+    </td></tr>`;
+    if (kpiEl) kpiEl.innerHTML = '';
+    return;
+  }
+
+  // Trier par spread décroissant
+  const sorted = [...positions].sort((a,b) => (b.spread_bp||0) - (a.spread_bp||0));
+
+  // KPIs
+  const spreads    = positions.map(p => p.spread_bp);
+  const totalValo  = positions.reduce((s,p) => s + (p.valo||0), 0);
+  const wavSpread  = totalValo > 0
+    ? positions.reduce((s,p) => s + (p.spread_bp||0)*(p.valo||0), 0) / totalValo
+    : 0;
+  const stats = positions[0]?.spread_stats || {};
+
+  if (kpiEl) kpiEl.innerHTML = [
+    { l:'Spread moyen pondéré', v:`${wavSpread.toFixed(1)} bp`, cls:'amber' },
+    { l:'Spread min',           v:`${Math.min(...spreads).toFixed(1)} bp`, cls:'green' },
+    { l:'Spread max',           v:`${Math.max(...spreads).toFixed(1)} bp`, cls:'red' },
+    { l:'Lignes calculées',     v:`${positions.length}`,           cls:'blue' },
+    { l:'Date snapshot',        v:snap.date,                        cls:'blue' },
+  ].map(k=>`<div class="kpi ${k.cls}"><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div></div>`).join('');
+
+  // Tableau
+  tbody.innerHTML = sorted.map(p => {
+    const sp = p.spread_bp;
+    const spColor = sp > 200 ? 'var(--red)' : sp > 100 ? 'var(--amber)' : 'var(--green)';
+    return `<tr>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.7rem">${p.name}</td>
+      <td style="font-family:var(--font-m);font-size:.62rem;color:var(--muted2)">${p.isin}</td>
+      <td style="font-size:.65rem;color:var(--muted2)">${p.sector||'—'}</td>
+      <td class="r" style="font-size:.7rem">${p.echeance||'—'}</td>
+      <td class="r" style="font-family:var(--font-m);font-size:.7rem">${p.taux?p.taux.toFixed(3)+'%':'—'}</td>
+      <td class="r" style="font-family:var(--font-m);font-size:.7rem">${p.price?p.price.toFixed(3):'—'}</td>
+      <td class="r" style="font-family:var(--font-m);font-size:.7rem">${fmtK(p.valo||0,0)}</td>
+      <td class="r" style="font-family:var(--font-m);font-size:.7rem">${p.poids?p.poids.toFixed(2)+'%':'—'}</td>
+      <td class="r" style="font-family:var(--font-m);font-size:.75rem;font-weight:700;color:${spColor}">${sp.toFixed(1)}</td>
+    </tr>`;
+  }).join('');
+
+  // Graphique scatter spread vs maturité
+  if (_spreadChart) { _spreadChart.destroy(); _spreadChart = null; }
+  const scatterData = positions
+    .filter(p => p.echeance && p.spread_bp != null)
+    .map(p => {
+      let matYears = 0;
+      try {
+        const parts = (p.echeance||'').split('/');
+        const mat = new Date(parts[2], parts[1]-1, parts[0]);
+        matYears = (mat - new Date()) / (365.25 * 24 * 3600 * 1000);
+      } catch(e) {}
+      return {
+        x: +matYears.toFixed(2),
+        y: p.spread_bp,
+        r: Math.max(4, Math.min(20, (p.valo||0) / 1e6 * 1.5)),
+        label: p.name.slice(0,25)
+      };
+    }).filter(d => d.x > 0);
+
+  _spreadChart = new Chart(document.getElementById('chart-spread-scatter'), {
+    type: 'bubble',
+    data: { datasets: [{
+      label: 'Spread (bp)',
+      data: scatterData,
+      backgroundColor: scatterData.map(d =>
+        d.y > 200 ? 'rgba(255,92,122,0.7)' :
+        d.y > 100 ? 'rgba(255,179,64,0.7)' :
+                    'rgba(0,200,255,0.7)'),
+      borderColor: scatterData.map(d =>
+        d.y > 200 ? '#ff5c7a' : d.y > 100 ? '#ffb340' : '#00c8ff'),
+      borderWidth: 1.5,
+    }]},
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        x: { ...CHART_DEFAULTS.scales.x,
+          title: { display:true, text:'Maturité (années)', color:'var(--muted)', font:{family:'Syne',size:10} },
+          ticks: { ...CHART_DEFAULTS.scales.x.ticks, callback: v => v+'Y' }
+        },
+        y: { ...CHART_DEFAULTS.scales.y,
+          title: { display:true, text:'Spread (bp)', color:'var(--muted)', font:{family:'Syne',size:10} },
+          ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => v+' bp' }
+        }
+      },
+      plugins: { ...CHART_DEFAULTS.plugins,
+        tooltip: { ...CHART_DEFAULTS.plugins.tooltip,
+          callbacks: {
+            label: ctx => ` ${ctx.raw.label} | ${ctx.raw.y.toFixed(1)} bp | ${ctx.raw.x.toFixed(1)}Y`
+          }
+        }
+      }
+    }
+  });
 }
 
 function calcBondFull(nominal, couponRatePct, yearsToMat, marketRatePct, frequency) {
