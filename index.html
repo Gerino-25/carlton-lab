@@ -26,6 +26,7 @@ function _showApp(user) {
   const av = document.getElementById('user-avatar');
   if (av) av.textContent = user.email[0].toUpperCase();
   if (!window._appInited) { window._appInited = true; if (typeof init === 'function') init(); }
+  if (window.fbStartListeners) fbStartListeners();
 }
 
 // Activer le bouton immédiatement
@@ -118,8 +119,14 @@ function doLogin() {
   }, 1000);
 
   // ══════════════════════════════════════════════════════
-  //  ORDRES — sync temps réel
+  //  LISTENERS — démarrés uniquement après connexion
   // ══════════════════════════════════════════════════════
+  let _listenersStarted = false;
+  window.fbStartListeners = () => {
+    if (_listenersStarted) return;
+    _listenersStarted = true;
+
+  // ORDRES
   onSnapshot(collection(db, "orders"), snap => {
     if (typeof ftbOrders === 'undefined') return;
     _fbSyncing = true;
@@ -137,7 +144,6 @@ function doLogin() {
     });
     _fbSyncing = false;
     if (typeof ftbRenderOMS === 'function') ftbRenderOMS();
-    // Refresh ticket ouvert si signatures modifiées
     const ticketBg = document.getElementById('ftb-ticket-modal-bg');
     if (ticketBg && !ticketBg.classList.contains('hidden') && window._sigCurrentOrderId) {
       const o = ftbOrders.find(o => o.id === window._sigCurrentOrderId);
@@ -145,9 +151,7 @@ function doLogin() {
     }
   });
 
-  // ══════════════════════════════════════════════════════
-  //  POSITIONS — sync temps réel par fonds
-  // ══════════════════════════════════════════════════════
+  // POSITIONS
   ['calipso','csw','csi'].forEach(fid => {
     onSnapshot(collection(db, "positions_" + fid), snap => {
       if (typeof FTB_POS === 'undefined') return;
@@ -169,9 +173,7 @@ function doLogin() {
     });
   });
 
-  // ══════════════════════════════════════════════════════
-  //  CASH — sync temps réel
-  // ══════════════════════════════════════════════════════
+  // CASH
   onSnapshot(doc(db, "fundcash", "all"), snap => {
     if (!snap.exists() || typeof FTB_FUNDS === 'undefined') return;
     const data = snap.data();
@@ -180,7 +182,21 @@ function doLogin() {
     });
   });
 
-  // ── Expose sync helpers ──
+  // SNAPSHOTS
+  onSnapshot(collection(db, "snapshots"), snap => {
+    window._fbSnapshots = {};
+    snap.forEach(d => { window._fbSnapshots[d.id] = d.data(); });
+    const cnt = document.getElementById('ftb-cnt-snapshots');
+    if (cnt) cnt.textContent = snap.size;
+    if (document.getElementById('ftb-module-historique')?.classList.contains('active')) {
+      if (typeof ftbRenderHistorique === 'function') ftbRenderHistorique();
+    }
+    if (typeof ftbUpdateSnapshotSelector === 'function') ftbUpdateSnapshotSelector();
+  });
+
+  }; // fin fbStartListeners
+
+  // ── Helpers sync Firebase ──
   window.fbSaveOrder = async (order) => {
     if (_fbSyncing) return;
     try { await setDoc(doc(db, "orders", order.id), order); } catch(e) { console.warn("Firebase order save:", e); }
@@ -207,29 +223,7 @@ function doLogin() {
       await setDoc(ref, current);
     } catch(e) { console.warn("Firebase cash save:", e); }
   };
-  // ══════════════════════════════════════════════════════
-  //  SNAPSHOTS — sync temps réel
-  // ══════════════════════════════════════════════════════
-  onSnapshot(collection(db, "snapshots"), snap => {
-    window._fbSnapshots = {};
-    snap.forEach(d => { window._fbSnapshots[d.id] = d.data(); });
-    // Update counter
-    const cnt = document.getElementById('ftb-cnt-snapshots');
-    if (cnt) cnt.textContent = snap.size;
-    // Refresh if visible
-    if (document.getElementById('ftb-module-historique')?.classList.contains('active')) {
-      if (typeof ftbRenderHistorique === 'function') ftbRenderHistorique();
-    }
-    // Also update date selector in positions module
-    if (typeof ftbUpdateSnapshotSelector === 'function') ftbUpdateSnapshotSelector();
-  });
-
-  window.fbSaveSnapshot = async (snap) => {
-    try { await setDoc(doc(db, "snapshots", snap.id), snap); } catch(e) { console.warn("Snapshot save:", e); }
-  };
-  window.fbDeleteSnapshot = async (id) => {
-    try { await deleteDoc(doc(db, "snapshots", id)); } catch(e) { console.warn("Snapshot delete:", e); }
-  };
+  window.fbSaveSignature = async (orderId, sigKey, sigData) => {
     if (_fbSyncing) return;
     try {
       const ref = doc(db, "orders", orderId);
@@ -241,6 +235,12 @@ function doLogin() {
         await setDoc(ref, order);
       }
     } catch(e) { console.warn("Firebase sig save:", e); }
+  };
+  window.fbSaveSnapshot = async (snap) => {
+    try { await setDoc(doc(db, "snapshots", snap.id), snap); } catch(e) { console.warn("Snapshot save:", e); }
+  };
+  window.fbDeleteSnapshot = async (id) => {
+    try { await deleteDoc(doc(db, "snapshots", id)); } catch(e) { console.warn("Snapshot delete:", e); }
   };
 
   console.log("✅ Carlton Lab — Firebase connecté :", firebaseConfig.projectId);
@@ -3548,6 +3548,7 @@ function loadSpreadExample() {
   renderSpreads();
 }
 
+function renderSpreads() {
   const fid      = document.getElementById('spread-fund-select')?.value || 'calipso';
   const snaps    = window._fbSnapshots || {};
   const tbody    = document.getElementById('spread-tbody');
