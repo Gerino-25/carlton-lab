@@ -1504,7 +1504,8 @@ select option { background: var(--s2); }
       <div id="spread-empty" style="display:none;text-align:center;padding:40px;color:var(--muted);font-size:.82rem;line-height:1.9">
         📐 Aucun spread disponible pour ce fonds.<br>
         Importez un fichier CACEIS via <strong style="color:var(--text)">Front-to-Back → 📥 Alimentation</strong><br>
-        <span style="font-size:.72rem">Le feeder Python doit avoir QuantLib installé pour calculer les spreads.</span>
+        <span style="font-size:.72rem">Le feeder Python doit avoir QuantLib installé pour calculer les spreads.</span><br><br>
+        <button class="btn btn-ghost btn-sm" onclick="loadSpreadExample()">📊 Charger données exemple</button>
       </div>
 
     </div>
@@ -3521,7 +3522,32 @@ function switchDurPane(name) {
 // ─── SPREADS DE CRÉDIT ───
 let _spreadChart = null;
 
-function renderSpreads() {
+function loadSpreadExample() {
+  // Injecter des données exemple dans _fbSnapshots pour tester l'affichage
+  if (!window._fbSnapshots) window._fbSnapshots = {};
+  const today = new Date();
+  const dateStr = `${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}`;
+  window._fbSnapshots['calipso_example'] = {
+    id: 'calipso_example', fid: 'calipso', fundName: 'Calipso A',
+    date: dateStr, dateRaw: '20260325',
+    nbPositions: 10, aum: 580000000, pnlTotal: -280000,
+    positions: [
+      { name:'BELFIUS SANV 3.75% 22-01-29',  isin:'BE0002993740', sector:'Financières EU',   taux:3.75,  echeance:'22/01/2029', price:100.721, valo:9124068,  poids:1.553, duration:2.82, spread_bp:62.4  },
+      { name:'UBS GROUP AG 0.25% 24-02-28',   isin:'CH0595205524', sector:'Financières Intl', taux:0.25,  echeance:'24/02/2028', price:94.321,  valo:11321068, poids:1.927, duration:1.95, spread_bp:28.1  },
+      { name:'BPCE 1.625% 31-01-28 EMTN',     isin:'FR0013312501', sector:'Financières FR',   taux:1.625, echeance:'31/01/2028', price:96.956,  valo:5054445,  poids:0.860, duration:1.87, spread_bp:45.7  },
+      { name:'CREDIT MUTUEL ARKEA 0.375%',    isin:'FR0013450822', sector:'Financières FR',   taux:0.375, echeance:'03/10/2028', price:93.272,  valo:8036854,  poids:1.368, duration:2.41, spread_bp:38.2  },
+      { name:'WELLS FARGO 1.5% 24-05-27',     isin:'XS1617830721', sector:'Financières Intl', taux:1.50,  echeance:'24/05/2027', price:98.381,  valo:19430316, poids:3.308, duration:1.13, spread_bp:52.9  },
+      { name:'RAIFFEISEN BANK 5.75% 27-01-28',isin:'XS2547936984', sector:'Financières EU',   taux:5.75,  echeance:'27/01/2028', price:104.281, valo:15886778, poids:2.704, duration:1.71, spread_bp:187.3 },
+      { name:'NORDEA BKP 4.125% 05-05-28',    isin:'XS2618906585', sector:'Financières EU',   taux:4.125, echeance:'05/05/2028', price:101.690, valo:19230800, poids:3.274, duration:2.02, spread_bp:71.8  },
+      { name:'VOLKSWAGEN BANK 2.5% 31-07-26', isin:'XS1944390597', sector:'Automobile',       taux:2.50,  echeance:'31/07/2026', price:99.912,  valo:14521505, poids:2.472, duration:0.34, spread_bp:93.4  },
+      { name:'UNICREDIT 3.25% 27-07-27 EMTN', isin:'XS2499011059', sector:'Financières EU',   taux:3.25,  echeance:'27/07/2027', price:99.916,  valo:14546357, poids:2.476, duration:1.32, spread_bp:78.6  },
+      { name:'LEASYS 4.5% 26-07-26 EMTN',     isin:'XS2656537664', sector:'ABS/Leasing',      taux:4.50,  echeance:'26/07/2026', price:100.391, valo:10340956, poids:1.760, duration:0.33, spread_bp:121.5 },
+    ]
+  };
+  document.getElementById('spread-fund-select').value = 'calipso';
+  renderSpreads();
+}
+
   const fid      = document.getElementById('spread-fund-select')?.value || 'calipso';
   const snaps    = window._fbSnapshots || {};
   const tbody    = document.getElementById('spread-tbody');
